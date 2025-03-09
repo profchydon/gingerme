@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  binaryTargets   = ["native"]
+  binaryTargets   = ["native", "darwin-arm64"]
   previewFeatures = ["fullTextSearch", "fullTextIndex", "fieldReference"]
 
 }
@@ -14,4 +14,69 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model categories {
+  id       Int        @id @default(autoincrement())
+  name     String
+  products products[]
+}
+
+model brands {
+  id       Int        @id @default(autoincrement())
+  name     String
+  products products[]
+}
+
+model suppliers {
+  id       Int        @id @default(autoincrement())
+  name     String
+  products products[]
+}
+
+model products {
+  id              Int               @id @default(autoincrement())
+  name            String
+  price           Float
+  stock           Int
+  category_id     Int
+  brand_id        Int
+  supplier_id     Int
+  category        categories        @relation(fields: [category_id], references: [id])
+  brand           brands            @relation(fields: [brand_id], references: [id])
+  supplier        suppliers         @relation(fields: [supplier_id], references: [id])
+  orders          orders[]
+  product_reviews product_reviews[]
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @default(now()) @updatedAt
+}
+
+model users {
+  id              Int               @id @default(autoincrement())
+  name            String
+  email           String            @unique
+  orders          orders[]
+  product_reviews product_reviews[]
+}
+
+model orders {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  product_id  Int
+  quantity    Int
+  total_price Float
+  user        users    @relation(fields: [user_id], references: [id])
+  product     products @relation(fields: [product_id], references: [id])
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+}
+
+model product_reviews {
+  id          Int      @id @default(autoincrement())
+  product_id  Int
+  user_id     Int
+  rating      Int      @default(0)
+  review_text String?
+  product     products @relation(fields: [product_id], references: [id])
+  user        users    @relation(fields: [user_id], references: [id])
 }
