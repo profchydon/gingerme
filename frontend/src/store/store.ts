@@ -11,31 +11,14 @@ import {
 
 /* Instruments */
 import { reducer } from "./rootReducer";
-import { customLogger } from "./middlewares/customLogger";
-import { rtkQueryErrorLogger } from "./middlewares/rtkQueryErrorLogger";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { authApi } from "@/api/baseQueries/authFlowApi";
-import { companiesApi } from "@/api/baseQueries/companiesApi";
-import { countriesApi } from "@/api/baseQueries/countriesApi";
-import { userApi } from "@/api/baseQueries/userApi";
-import { assetsApi } from "@/api/baseQueries/assetsApi";
-import { cartApi } from "@/api/baseQueries/cartApi";
-import { currenciesApi } from "@/api/baseQueries/currenciesApi";
-import { plansApi } from "@/api/baseQueries/plansApi";
-import { feesApi } from "@/api/baseQueries/feesApi";
+import { productsApi } from "../api/baseQueries/productsApi";
+import { orderApi } from "../api/baseQueries/orderApi";
+
 
 const middleWares = [
-  rtkQueryErrorLogger,
-  customLogger,
-  authApi.middleware,
-  companiesApi.middleware,
-  countriesApi.middleware,
-  userApi.middleware,
-  cartApi.middleware,
-  assetsApi.middleware,
-  currenciesApi.middleware,
-  plansApi.middleware,
-  feesApi.middleware,
+  productsApi.middleware,
+  orderApi.middleware
 ];
 
 export const reduxStore = configureStore({

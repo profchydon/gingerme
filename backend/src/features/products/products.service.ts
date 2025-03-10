@@ -114,7 +114,84 @@ export class ProductsService {
     });
   }
 
-  async findAll(filterDto: FindProductsQueryDto) {
+  // async getProducts(filterDto: FindProductsQueryDto) {
+  //   const {
+  //     page = 1,
+  //     search,
+  //     offset,
+  //     limit = 50,
+  //     sort,
+  //     category,
+  //     brand,
+  //     supplier,
+  //     minRating,
+  //   } = filterDto;
+
+  //   const where = {
+  //     ...(category && { category: { name: category } }),
+  //     ...(brand && { brand: { name: brand } }),
+  //     ...(supplier && { supplier: { name: supplier } }),
+  //     ...(minRating && {
+  //       product_reviews: {
+  //         some: {
+  //           rating: {
+  //             gte: minRating,
+  //           },
+  //         },
+  //       },
+  //     }),
+  //   };
+
+  //   const products = await this.prismaService.products.findMany({
+  //     where,
+  //     take: limit,
+  //     select: {
+  //       id: true,
+  //       name: true,
+  //       price: true,
+  //       stock: true,
+  //       category: {
+  //         select: {
+  //           id: true,
+  //           name: true,
+  //         },
+  //       },
+  //       brand: {
+  //         select: {
+  //           id: true,
+  //           name: true,
+  //         },
+  //       },
+  //       supplier: {
+  //         select: {
+  //           id: true,
+  //           name: true,
+  //         },
+  //       },
+  //       product_reviews: {
+  //         select: {
+  //           id: true,
+  //           rating: true,
+  //           review_text: true,
+  //         },
+  //       },
+  //     },
+  //   });
+
+  //   const total = await this.prismaService.products.count({ where });
+
+  //   return {
+  //     data: products,
+  //     meta: {
+  //       total,
+  //       page,
+  //       limit,
+  //       totalPages: Math.ceil(total / limit),
+  //     },
+  //   };
+  // }
+
+  async getProducts(filterDto: FindProductsQueryDto) {
     const { search, offset, limit, sort } = filterDto;
     const productWhere: Prisma.productsWhereInput = {
       OR: [

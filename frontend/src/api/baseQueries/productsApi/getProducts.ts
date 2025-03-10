@@ -21,8 +21,9 @@ const getProducts = productsApi.injectEndpoints({
         void
       >
     >({
-      query: () => ({
+      query: (config) => ({
         url: `/products`,
+        ...config,
       }),
     }),
   }),

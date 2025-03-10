@@ -4,6 +4,8 @@ import { combineReducers } from "@reduxjs/toolkit";
 import { persistReducer } from "redux-persist";
 import customStorage from "./cutomStorage";
 import { globalSlice } from "./slices/globalSlice";
+import { productsApi } from "../api/baseQueries/productsApi";
+import { orderApi } from "../api/baseQueries/orderApi";
 
 
 
@@ -23,4 +25,6 @@ const persistedReducers = persistReducer(
 
 export const reducer = {
   persistedReducers,
+  [productsApi.reducerPath]: productsApi.reducer,
+  [orderApi.reducerPath]: orderApi.reducer,
 };

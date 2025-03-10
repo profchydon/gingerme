@@ -27,4 +27,21 @@ export class FindProductsQueryDto {
 
   @IsOptional()
   sort: FindProductsQuerySortDto;
+
+  @IsOptional()
+  @IsNumber()
+  page?: number;
+
+  @IsOptional()
+  category?: string;
+
+  @IsOptional()
+  brand?: string;
+
+  @IsOptional()
+  supplier?: string;
+
+  @IsOptional()
+  @IsNumber()
+  minRating?: number;
 }
