@@ -45,6 +45,7 @@ The backend is built with **NestJS** and uses **Prisma** as the ORM for database
 
 2. **Install Dependencies:**:
    ```bash
+   nvm use 22
    npm install
    ```
 
@@ -55,14 +56,15 @@ The backend is built with **NestJS** and uses **Prisma** as the ORM for database
   PORT=3000
  ```
 
-4. **Run Database Migrations (Prisma):**:
-   ```bash
-   npx prisma migrate dev --name init
-   ```
-
-5. **Run Database with docker:**:
+4. **Run Database with docker:**:
+Make sure docker is running
    ```bash
    docker-compose up -d
+   ```
+
+5. **Run Database Migrations (Prisma):**:
+   ```bash
+   npx prisma migrate dev --name init
    ```
 
 6. **Import data into database:**:
@@ -89,6 +91,7 @@ The frontend is built with ReactJS and uses Tailwind CSS for styling.
 
 2. **Install Dependencies:**:
    ```bash
+   nvm use 20
    npm install
    ```
 

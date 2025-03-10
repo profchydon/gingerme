@@ -7,43 +7,43 @@ import { useGetProductsQuery } from "../../api/baseQueries/productsApi/getProduc
 import { FaSearch, FaSort } from "react-icons/fa";
 
 const ProductList = () => {
-  const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const [limit] = useState(100);
 
-  const [priceSort, setPriceSort] = useState("");
-  const [dateSort, setDateSort] = useState("");
-  const [stockSort, setStockSort] = useState("");
+  const [priceSortOrder, setPriceSortOrder] = useState<ProductSortOrder>("");
+  const [dateSortOrder, setDateSortOrder] = useState<ProductSortOrder>("");
+  const [stockSortOrder, setStockSortOrder] = useState<ProductSortOrder>("");
 
-  const [deferredSearch] = useDebouncedState(search, {
+  const [deferredSearchQuery] = useDebouncedState(searchQuery, {
     enableReInitialize: true,
     wait: 1000,
   });
 
-  const { data: productsResponse, isLoading, isError, isSuccess } = useGetProductsQuery({
+  const { data, isLoading, isError, isSuccess } = useGetProductsQuery({
     params: {
       limit,
       offset,
       sort: {
-        price: priceSort as ProductSortOrder,
-        date: dateSort as ProductSortOrder,
-        stock: stockSort as ProductSortOrder,
+        price: priceSortOrder,
+        date: dateSortOrder,
+        stock: stockSortOrder,
       },
-      ...(deferredSearch ? { search: deferredSearch } : {}),
+      ...(deferredSearchQuery ? { search: deferredSearchQuery } : {}),
     },
   });
 
-  const productsData = productsResponse?.data;
+  const products = data?.data?.products || [];
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
-  const handlePrevious = () => {
+  const handlePreviousPage = () => {
     setOffset((offset) => offset - 100);
   };
 
-  const handleNext = () => {
+  const handleNextPage = () => {
     setOffset((offset) => offset + 100);
   };
 
@@ -58,8 +58,8 @@ const ProductList = () => {
           <input
             type="text"
             placeholder="Search products..."
-            value={search}
-            onChange={handleSearch}
+            value={searchQuery}
+            onChange={handleSearchInputChange}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -68,8 +68,8 @@ const ProductList = () => {
         <div className="flex flex-wrap gap-4 mb-8">
           <div className="relative">
             <select
-              onChange={(e) => setPriceSort(e.target.value as ProductSortOrder)}
-              value={priceSort}
+              onChange={(e) => setPriceSortOrder(e.target.value as ProductSortOrder)}
+              value={priceSortOrder}
               className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Sort by Price</option>
@@ -86,8 +86,8 @@ const ProductList = () => {
 
           <div className="relative">
             <select
-              onChange={(e) => setDateSort(e.target.value as ProductSortOrder)}
-              value={dateSort}
+              onChange={(e) => setDateSortOrder(e.target.value as ProductSortOrder)}
+              value={dateSortOrder}
               className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Sort by Date</option>
@@ -104,8 +104,8 @@ const ProductList = () => {
 
           <div className="relative">
             <select
-              onChange={(e) => setStockSort(e.target.value as ProductSortOrder)}
-              value={stockSort}
+              onChange={(e) => setStockSortOrder(e.target.value as ProductSortOrder)}
+              value={stockSortOrder}
               className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Sort by Stock</option>
@@ -153,7 +153,7 @@ const ProductList = () => {
         {/* Product Grid */}
         {isSuccess && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {productsData?.products?.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
@@ -162,17 +162,16 @@ const ProductList = () => {
         {/* Pagination */}
         <div className="flex justify-center gap-4 mt-8">
           <button
-            onClick={handlePrevious}
+            onClick={handlePreviousPage}
             disabled={offset === 0}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Previous
           </button>
           <button
-            onClick={handleNext}
+            onClick={handleNextPage}
             disabled={
-              productsData?.totalRecords === 0 ||
-              productsData?.totalRecords === offset
+              data?.totalRecords === 0 || data?.totalRecords === offset
             }
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
@@ -182,7 +181,7 @@ const ProductList = () => {
 
         {/* Total Records */}
         <p className="text-center text-gray-600 mt-4">
-          Total Records: {productsData?.totalRecords}
+          Total Records: {data?.totalRecords}
         </p>
       </div>
     </div>
