@@ -16,4 +16,13 @@ export class ProductsController {
   public async getProducts(@Query() query: FindProductsQueryDto) {
     return await this.productsService.getProducts(query);
   }
+
+  @Get('top-selling')
+  @Response({
+    status: HttpStatus.OK,
+    message: 'Top-selling products fetched successfully',
+  })
+  getTopSellingProducts(@Query() query: FindProductsQueryDto) {
+    return this.productsService.getTopSellingProducts(query);
+  }
 }

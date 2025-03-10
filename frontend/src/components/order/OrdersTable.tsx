@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import DataTable from "react-data-table-component";
 
 const OrdersTable = ({ orders }) => {
+  const [search, setSearch] = useState("");
+  const [filteredOrders, setFilteredOrders] = useState(orders);
+
+  // Define columns
   const columns = [
     {
       name: "Order ID",
@@ -56,12 +60,39 @@ const OrdersTable = ({ orders }) => {
     },
   ];
 
+  // Handle search input change
+  const handleSearch = (event) => {
+    const value = event.target.value.toLowerCase();
+    setSearch(value);
+
+    const filteredData = orders.filter((order) =>
+      order.user.name.toLowerCase().includes(value) ||
+      order.product.name.toLowerCase().includes(value) ||
+      order.product.brand.name.toLowerCase().includes(value) ||
+      order.product.supplier.name.toLowerCase().includes(value) ||
+      order.product.category.name.toLowerCase().includes(value)
+    );
+
+    setFilteredOrders(filteredData);
+  };
+
   return (
-    <div className="p-6">
+    <div className="py-6">
       {/* <h1 className="text-2xl font-bold mb-4">Orders Table</h1> */}
+
+      {/* Search Input */}
+      <input
+        type="text"
+        placeholder="Search orders..."
+        value={search}
+        onChange={handleSearch}
+        className="mb-4 p-2 border border-gray-300 rounded w-full"
+      />
+
+      {/* DataTable Component */}
       <DataTable
         columns={columns}
-        data={orders}
+        data={filteredOrders}
         pagination
         highlightOnHover
         striped

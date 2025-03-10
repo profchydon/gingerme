@@ -26,8 +26,8 @@ const Orders = () => {
             </h2>
 
             <div className="flex gap-5">
-              <Link to="/orders" className="text-blue-500">
-                Orders
+              <Link to="/" className="text-blue-500">
+                Products
               </Link>
               <Link to="/products/top-selling" className="text-blue-500">
                 Product Top Selling

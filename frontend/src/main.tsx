@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import { Providers } from "./lib/providers.tsx";
 import ProductList from "./components/product/ProductList.tsx";
 import Orders from "./components/order/Orders.tsx";
+import ProductTopSelling from "./components/product/ProductTopSelling.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -14,6 +15,7 @@ createRoot(document.getElementById("root")!).render(
         <Routes>
           <Route path="/" element={<ProductList />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/products/top-selling" element={<ProductTopSelling />} />
           {/* <Route path="/products" element={<ProductList />} />
           {/* <Route path="/products/top-selling" element={<ProductToSelling />} /> */}
         </Routes>
