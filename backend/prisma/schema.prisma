@@ -49,6 +49,10 @@ model products {
   product_reviews product_reviews[]
   created_at      DateTime          @default(now())
   updated_at      DateTime          @default(now()) @updatedAt
+
+  @@index([category_id]) // Add index for category_id
+  @@index([brand_id])    // Add index for brand_id
+  @@index([supplier_id]) // Add index for supplier_id
 }
 
 model users {
@@ -69,6 +73,8 @@ model orders {
   product     products @relation(fields: [product_id], references: [id])
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now()) @updatedAt
+
+  @@index([product_id]) // Add index for product_id
 }
 
 model product_reviews {
@@ -79,4 +85,7 @@ model product_reviews {
   review_text String?
   product     products @relation(fields: [product_id], references: [id])
   user        users    @relation(fields: [user_id], references: [id])
+
+  @@index([product_id]) // Add index for product_id
+  @@index([rating])     // Add index for rating
 }

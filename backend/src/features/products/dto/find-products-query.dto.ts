@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 enum SortOrder {
   ASC = 'asc',
@@ -27,4 +27,23 @@ export class FindProductsQueryDto {
 
   @IsOptional()
   sort: FindProductsQuerySortDto;
+
+  @IsOptional()
+  @IsNumber()
+  page?: number;
+
+  @IsOptional()
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  brand?: string;
+
+  @IsOptional()
+  @IsString()
+  supplier?: string;
+
+  @IsOptional()
+  @IsNumber()
+  minRating?: number;
 }

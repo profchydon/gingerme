@@ -1,150 +1,117 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { PrismaService } from 'src/database/prisma.service';
 import { FindProductsQueryDto } from './dto/find-products-query.dto';
-import { OrderProductDto } from './dto/order-product.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(private prismaService: PrismaService) {}
 
-  async order(dto: OrderProductDto) {
-    const { productId, quantity } = dto;
-    return this.prismaService.$transaction(async (prisma) => {
-      const product = await prisma.products.findUnique({
-        where: { id: productId },
-      });
+  async getTopSellingProducts(query: FindProductsQueryDto) {
+    const { page = 1, limit, brand, supplier } = query;
+    const skip = (page - 1) * limit;
 
-      if (!product) {
-        throw new NotFoundException('Product not found');
-      }
+    const where = {
+      ...(brand && { brand: { name: brand } }),
+      ...(supplier && { supplier: { name: supplier } }),
+    };
 
-      if (product.stock < quantity) {
-        throw new BadRequestException('Insufficient stock');
-      }
-
-      await prisma.products.update({
-        where: { id: productId },
-        data: { stock: product.stock - quantity },
-      });
-
-      await prisma.orders.create({
-        data: {
-          quantity,
-          total_price: Number(product.price) * quantity, // Assuming product has a price field
-          user: {
-            connect: {
-              id: 1, // Replace with the actual user ID
-            },
-          },
-          product: {
-            connect: {
-              id: productId,
-            },
-          },
-        },
-      });
-
-      return product;
-    });
-  }
-
-  async findAllOrders() {
-    return this.prismaService.orders.findMany({
-      include: {
-        product: {
-          include: {
-            brand: true,
-            supplier: true,
-            product_reviews: {
-              select: {
-                id: true,
-                rating: true,
-              },
-            },
-          },
-        },
+    // Aggregate total quantity sold for each product
+    const topSellingProducts = await this.prismaService.orders.groupBy({
+      by: ['product_id'],
+      _sum: {
+        quantity: true,
       },
-      orderBy: [
-        {
-          created_at: 'desc',
-        },
-      ],
-      take: 100,
-    });
-  }
-
-  //TODO: improve logic : WIP
-  async topSellingProducts() {
-    return this.prismaService.orders.findMany({
       where: {
-        created_at: {
-          gte: new Date(new Date().setDate(new Date().getDate() - 7)), // Last 7 days
-        },
-        product: {
-          stock: {
-            gt: 0,
-          },
-        },
-      },
-      include: {
-        product: {
-          include: {
-            brand: true,
-            supplier: true,
-            product_reviews: {
-              select: {
-                id: true,
-                rating: true,
-              },
-            },
-          },
-        },
+        product: where, // Apply brand and supplier filters
       },
       orderBy: {
-        product: {
-          stock: 'desc',
+        _sum: {
+          quantity: 'desc', // Sort by total quantity sold (descending)
         },
       },
+      take: Number(limit),
+      skip,
     });
+
+    // Fetch product details for the top-selling products
+    const productIds = topSellingProducts.map((item) => item.product_id);
+    const products = await this.prismaService.products.findMany({
+      where: {
+        id: { in: productIds },
+      },
+      include: {
+        category: true,
+        brand: true,
+        supplier: true,
+      },
+    });
+
+    // Map the total quantity sold to each product
+    const productsWithQuantity = products.map((product) => {
+      const foundItem = topSellingProducts.find(
+        (item) => item.product_id === product.id,
+      );
+
+      // Handle the case where no matching item is found
+      const quantitySold = foundItem ? foundItem._sum.quantity : 0;
+
+      return {
+        ...product,
+        total_quantity_sold: quantitySold,
+      };
+    });
+
+    // Count total products for pagination
+    const total = await this.prismaService.orders.groupBy({
+      by: ['product_id'],
+      where: {
+        product: where,
+      },
+    });
+
+    return {
+      data: productsWithQuantity,
+      meta: {
+        total: total.length,
+        page,
+        limit,
+        totalPages: Math.ceil(total.length / limit),
+      },
+    };
   }
 
-  async findAll(filterDto: FindProductsQueryDto) {
+  async getProducts(filterDto: FindProductsQueryDto) {
     const { search, offset, limit, sort } = filterDto;
+
     const productWhere: Prisma.productsWhereInput = {
-      OR: [
-        {
-          name: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          category: {
-            name: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-        },
-        {
-          brand: {
-            name: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-        },
-      ],
+      OR: search
+        ? [
+            { name: { contains: search, mode: 'insensitive' } },
+            { category: { name: { contains: search, mode: 'insensitive' } } },
+            { brand: { name: { contains: search, mode: 'insensitive' } } },
+          ]
+        : undefined,
     };
+
+    const sortMappings: Record<string, string> = {
+      price: 'price',
+      date: 'created_at',
+      stock: 'stock',
+    };
+
+    const orderByConditions: Prisma.productsOrderByWithRelationInput[] =
+      sort && typeof sort === 'object'
+        ? Object.entries(sort).map(([key, value]) => ({
+            [sortMappings[key] || key]: value as Prisma.SortOrder,
+          }))
+        : [];
+
     const totalRecords = await this.prismaService.products.count({
       where: productWhere,
     });
+
     const products = await this.prismaService.products.findMany({
       where: productWhere,
       include: {
@@ -157,13 +124,12 @@ export class ProductsService {
           },
         },
       },
-      orderBy: [
-        ...(sort?.price ? [{ price: sort.price as Prisma.SortOrder }] : []),
-        ...(sort?.date ? [{ created_at: sort.date as Prisma.SortOrder }] : []),
-        ...(sort?.stock ? [{ stock: sort.stock as Prisma.SortOrder }] : []),
-      ],
-      ...(limit && { take: +limit }),
-      ...(offset && { skip: +offset }),
+      orderBy:
+        orderByConditions.length > 0
+          ? orderByConditions
+          : [{ created_at: 'desc' }],
+      take: limit ? Number(limit) : undefined,
+      skip: offset ? Number(offset) : undefined,
     });
 
     return {
