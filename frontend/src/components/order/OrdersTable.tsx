@@ -1,52 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 
 const OrdersTable = ({ orders }) => {
   const [search, setSearch] = useState("");
-  const [filteredOrders, setFilteredOrders] = useState(orders);
+  const [filteredOrders, setFilteredOrders] = useState([]);
 
-  // Define columns
+  useEffect(() => {
+    setFilteredOrders(orders);
+  }, [orders]);
+
+  // Define table columns
   const columns = [
-    {
-      name: "Order ID",
-      selector: (row) => row.id,
-      sortable: true,
-    },
-    {
-      name: "Customer",
-      selector: (row) => row.user.name,
-      sortable: true,
-    },
-    {
-      name: "Product",
-      selector: (row) => row.product.name,
-      sortable: true,
-    },
-    {
-      name: "Brand",
-      selector: (row) => row.product.brand.name,
-      sortable: true,
-    },
-    {
-      name: "Supplier",
-      selector: (row) => row.product.supplier.name,
-      sortable: true,
-    },
-    {
-      name: "Category",
-      selector: (row) => row.product.category.name,
-      sortable: true,
-    },
-    {
-      name: "Quantity",
-      selector: (row) => row.quantity,
-      sortable: true,
-    },
-    {
-      name: "Total Price ($)",
-      selector: (row) => row.total_price.toFixed(2),
-      sortable: true,
-    },
+    { name: "Order ID", selector: (row) => row.id, sortable: true },
+    { name: "Customer", selector: (row) => row.user.name, sortable: true },
+    { name: "Product", selector: (row) => row.product.name, sortable: true },
+    { name: "Brand", selector: (row) => row.product.brand.name, sortable: true },
+    { name: "Supplier", selector: (row) => row.product.supplier.name, sortable: true },
+    { name: "Category", selector: (row) => row.product.category.name, sortable: true },
+    { name: "Quantity", selector: (row) => row.quantity, sortable: true },
+    { name: "Total Price ($)", selector: (row) => row.total_price.toFixed(2), sortable: true },
     {
       name: "Avg. Rating",
       selector: (row) =>
@@ -65,12 +37,13 @@ const OrdersTable = ({ orders }) => {
     const value = event.target.value.toLowerCase();
     setSearch(value);
 
-    const filteredData = orders.filter((order) =>
-      order.user.name.toLowerCase().includes(value) ||
-      order.product.name.toLowerCase().includes(value) ||
-      order.product.brand.name.toLowerCase().includes(value) ||
-      order.product.supplier.name.toLowerCase().includes(value) ||
-      order.product.category.name.toLowerCase().includes(value)
+    const filteredData = orders.filter(
+      (order) =>
+        order.user.name.toLowerCase().includes(value) ||
+        order.product.name.toLowerCase().includes(value) ||
+        order.product.brand.name.toLowerCase().includes(value) ||
+        order.product.supplier.name.toLowerCase().includes(value) ||
+        order.product.category.name.toLowerCase().includes(value)
     );
 
     setFilteredOrders(filteredData);
@@ -78,8 +51,6 @@ const OrdersTable = ({ orders }) => {
 
   return (
     <div className="py-6">
-      {/* <h1 className="text-2xl font-bold mb-4">Orders Table</h1> */}
-
       {/* Search Input */}
       <input
         type="text"
@@ -96,6 +67,7 @@ const OrdersTable = ({ orders }) => {
         pagination
         highlightOnHover
         striped
+        responsive
       />
     </div>
   );

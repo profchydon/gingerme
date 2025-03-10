@@ -84,35 +84,34 @@ export class ProductsService {
 
   async getProducts(filterDto: FindProductsQueryDto) {
     const { search, offset, limit, sort } = filterDto;
+
     const productWhere: Prisma.productsWhereInput = {
-      OR: [
-        {
-          name: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          category: {
-            name: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-        },
-        {
-          brand: {
-            name: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-        },
-      ],
+      OR: search
+        ? [
+            { name: { contains: search, mode: 'insensitive' } },
+            { category: { name: { contains: search, mode: 'insensitive' } } },
+            { brand: { name: { contains: search, mode: 'insensitive' } } },
+          ]
+        : undefined,
     };
+
+    const sortMappings: Record<string, string> = {
+      price: 'price',
+      date: 'created_at',
+      stock: 'stock',
+    };
+
+    const orderByConditions: Prisma.productsOrderByWithRelationInput[] =
+      sort && typeof sort === 'object'
+        ? Object.entries(sort).map(([key, value]) => ({
+            [sortMappings[key] || key]: value as Prisma.SortOrder,
+          }))
+        : [];
+
     const totalRecords = await this.prismaService.products.count({
       where: productWhere,
     });
+
     const products = await this.prismaService.products.findMany({
       where: productWhere,
       include: {
@@ -125,13 +124,12 @@ export class ProductsService {
           },
         },
       },
-      orderBy: [
-        ...(sort?.price ? [{ price: sort.price as Prisma.SortOrder }] : []),
-        ...(sort?.date ? [{ created_at: sort.date as Prisma.SortOrder }] : []),
-        ...(sort?.stock ? [{ stock: sort.stock as Prisma.SortOrder }] : []),
-      ],
-      ...(limit && { take: +limit }),
-      ...(offset && { skip: +offset }),
+      orderBy:
+        orderByConditions.length > 0
+          ? orderByConditions
+          : [{ created_at: 'desc' }],
+      take: limit ? Number(limit) : undefined,
+      skip: offset ? Number(offset) : undefined,
     });
 
     return {
