@@ -18,7 +18,7 @@ export default function ProductCard({ product, noAction }: ProductCardProps) {
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors">
             <Link to="#">{product.name}</Link>
           </h3>
-          <span className="text-xs text-gray-500 ml-2 bg-amber-200 py-1 px-2 rounded-2xl">
+          <span className="text-xs text-blue-600 ml-2 bg-amber-200 py-1 px-2 rounded-2xl">
             #{product.id}
           </span>
         </div>
