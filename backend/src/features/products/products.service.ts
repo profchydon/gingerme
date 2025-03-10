@@ -83,8 +83,9 @@ export class ProductsService {
   }
 
   async getProducts(filterDto: FindProductsQueryDto) {
-    const { search, offset, limit, sort } = filterDto;
+    const { search, offset, limit, price, date, stock } = filterDto;
 
+    // Define search filters
     const productWhere: Prisma.productsWhereInput = {
       OR: search
         ? [
@@ -95,43 +96,38 @@ export class ProductsService {
         : undefined,
     };
 
-    const sortMappings: Record<string, string> = {
-      price: 'price',
-      date: 'created_at',
-      stock: 'stock',
-    };
+    const orderByConditions: Prisma.productsOrderByWithRelationInput[] = [];
 
-    const orderByConditions: Prisma.productsOrderByWithRelationInput[] =
-      sort && typeof sort === 'object'
-        ? Object.entries(sort).map(([key, value]) => ({
-            [sortMappings[key] || key]: value as Prisma.SortOrder,
-          }))
-        : [];
+    // ✅ Include individual sorting parameters if set
+    if (price) orderByConditions.push({ price: price as Prisma.SortOrder });
+    if (date) orderByConditions.push({ created_at: date as Prisma.SortOrder });
+    if (stock) orderByConditions.push({ stock: stock as Prisma.SortOrder });
 
+    if (orderByConditions.length === 0) {
+      orderByConditions.push({ created_at: 'desc' });
+    }
+
+    // Fetch total records
     const totalRecords = await this.prismaService.products.count({
       where: productWhere,
     });
 
+    // Fetch products with sorting
     const products = await this.prismaService.products.findMany({
       where: productWhere,
       include: {
         brand: true,
         supplier: true,
         product_reviews: {
-          select: {
-            id: true,
-            rating: true,
-          },
+          select: { id: true, rating: true },
         },
       },
-      orderBy:
-        orderByConditions.length > 0
-          ? orderByConditions
-          : [{ created_at: 'desc' }],
+      orderBy: orderByConditions,
       take: limit ? Number(limit) : undefined,
       skip: offset ? Number(offset) : undefined,
     });
 
+    // Return response
     return {
       totalRecords,
       products,
