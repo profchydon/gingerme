@@ -24,6 +24,9 @@ const ProductList = () => {
     params: {
       limit,
       offset,
+      price: priceSortOrder,
+      date: dateSortOrder,
+      stock: stockSortOrder,
       sort: {
         price: priceSortOrder,
         date: dateSortOrder,

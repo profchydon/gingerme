@@ -12,6 +12,9 @@ const getProducts = productsApi.injectEndpoints({
           search?: string;
           offset?: number;
           limit?: number;
+          price?: string;
+          date?: string;
+          stock?: string;
           sort?: {
             price?: ProductSortOrder;
             date?: ProductSortOrder;
